@@ -14,7 +14,7 @@ if uploaded_file:
 
     if res.status_code == 200:
         data = res.json()["prediction"]
-        st.success(f"✅ Prediction: {data['class']} ({data['edibility']})")
+        st.success(f"✅ Prediction: {data['class']} ({data['index']})")
         st.write(f"Confidence: {data['confidence']}")
     else:
         st.error(f"Error: {res.text}")
