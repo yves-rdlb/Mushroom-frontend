@@ -1,4 +1,4 @@
-url="https://mushroom-api-589582796964.europe-west1.run.app/docs#/default/predict_predict__post"
+url="https://mushroom-api-589582796964.europe-west1.run.app/predict/"
 
 import streamlit as st
 import requests
