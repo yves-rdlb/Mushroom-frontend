@@ -37,7 +37,7 @@ if img_bytes and st.button("Get Specie"):
         res = requests.post(API_URL, files=files, timeout=60)
         if res.ok:
             data = res.json()["prediction"]
-            st.success(f"✅ {data['class']} ({data['index']}) — confidence {data['confidence']}")
+            st.success(f"✅ {data['class']} ({data['index']}) — confidence {data['confidence']}%")
         else:
             st.error(f"Erreur API: {res.status_code} — {res.text}")
     except Exception as e:
