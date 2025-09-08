@@ -1,4 +1,4 @@
-url="http://127.0.0.1:8000/predict/"
+url="https://mushroom-api-589582796964.europe-west1.run.app/docs#/default/predict_predict__post"
 
 import streamlit as st
 import requests
@@ -10,7 +10,7 @@ uploaded_file = st.file_uploader("Upload a mushroom image", type=["jpg", "jpeg",
 if uploaded_file:
     # envoie au backend FastAPI
     files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "image/jpeg")}
-    res = requests.post("http://127.0.0.1:8000/predict/", files=files)
+    res = requests.post(url, files=files)
 
     if res.status_code == 200:
         data = res.json()["prediction"]
