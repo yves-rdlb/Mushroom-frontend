@@ -47,6 +47,10 @@ with left :
             # see the file
             st.image(Image.open(io.BytesIO(img_bytes)), caption="Your file : ", use_container_width=True)
 
+    with st.expander("Pro tip", expanded=False):
+            st.markdown(
+            "You have to put a picture of a Mushroom (Not a picture of yourself 😉)"
+            )
 # ========= Right Column =========
 with right :
     st.markdown("### Discover the specie")
