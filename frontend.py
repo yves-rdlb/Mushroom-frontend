@@ -14,7 +14,7 @@ filename = None
 mime = "image/jpeg"
 
 with tab_cam:
-    snap = st.camera_input("Prends une photo")
+    snap = st.camera_input("Take a picture")
     if snap is not None:
         img_bytes = snap.getvalue()
         filename = "camera.jpg"
@@ -23,7 +23,7 @@ with tab_cam:
         st.image(Image.open(io.BytesIO(img_bytes)), caption="Your photo : ", use_container_width=True)
 
 with tab_file:
-    uploaded = st.file_uploader("Choisir une image", type=["jpg", "jpeg", "png"])
+    uploaded = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
     if uploaded is not None:
         img_bytes = uploaded.getvalue()
         filename = uploaded.name
