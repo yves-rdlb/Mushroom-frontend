@@ -3,14 +3,21 @@ import requests
 from PIL import Image
 import io
 import time
+import requests
+from functions import background,title,url_exists
+import matplotlib.pyplot as plt
 
 API_URL= "https://vit-api-589582796964.europe-west1.run.app/predict/"
 
 # ========= HEADER =========
-st.set_page_config(page_title="What Is This Mushroom?", page_icon="🍄", layout="wide")
-st.title("🍄 What Is This Mushroom?")
-st.caption("Upload a picture of a Mushroom and get to know its specie")
 
+st.set_page_config(page_title="What Is This Mushroom?", page_icon="🍄", layout="wide")
+
+#setting the color
+background()
+title()
+st.markdown("---")
+st.markdown("Upload a picture of a Mushroom and get to know its specie + site description etc...")
 # ========= UI LAYOUT =========
 left, right = st.columns([1, 1])
 
@@ -43,7 +50,7 @@ with left :
 
 # ========= Right Column =========
 with right :
-    st.markdown("### Get to know the specie")
+    st.markdown("### Discover the specie")
     if img_bytes:
         for i in range(2) :
             st.markdown(" ")
@@ -63,21 +70,29 @@ with right :
         go = False
     specie=" "
     if img_bytes and go:
+        progress = st.progress(0, text="Preparing request…")
         try:
-            files = {"file": (filename, img_bytes, mime)}
-            res = requests.post(API_URL, files=files, timeout=60)
+            progress.progress(0, text="Loading…")
+            time.sleep(0.1)
+            with st.spinner("Loading…") :
+                progress.progress(23, text="Connecting with the model…")
+                time.sleep(0.5)
+                progress.progress(47, text="Model is running… (it might take longer for the first picture)")
+                files = {"file": (filename, img_bytes, mime)}
+                res = requests.post(API_URL, files=files, timeout=60)
+                progress.progress(68, text="Getting the result…")
+                time.sleep(0.5)
+
             if res.ok:
                 data = res.json()["prediction"]
                 specie,edibility,confidence=data['class'],data['edibility'],data['confidence']
+                progress.progress(100, text="Done!")
 
-                progress = st.progress(0, text="Preparing request…")
-                for percent_complete in range(0,110,10) :
-                    time.sleep(0.1)
-                progress.progress(percent_complete,text="Loading finished !")
             else:
                 st.error(f"API error: {res.status_code} — {res.text}")
         except Exception as e:
             st.error(f"Request failed: {e}")
+
     if specie != " " :
         c1, c2, c3 = st.columns([1.2, 1, 1])
         with c1:
@@ -85,7 +100,7 @@ with right :
             if edibility == "not edible":
                 st.error("This Mushroom is not edible")
             elif edibility == "edible":
-                st.success("✅ edible")
+                st.success("This Mushroom is edible")
         with c2:
             confidence=confidence[:-1]
             confidence=float(confidence)
@@ -95,14 +110,34 @@ with right :
             elif confidence < 50 :
                 st.error("low confidence")
             else :
-                st.warning("mid confidence")
+                st.warning("medium confidence")
 
-        with c3:
-            st.metric("Source", "API")
 
-        for i in range(3) :
+        for i in range(2) :
                 st.markdown(" ")
-        if edibility == "not edible":
-            st.warning("⚠️ Do not consume this mushroom !")
-        elif edibility == "edible":
-            st.caption("⚠️ Informational only. Do not eat mushrooms based on an app prediction.")
+        st.markdown("###### ⚠️ This is purely informational. Our model may be wrong. Never eat mushrooms based on an app prediction. ")
+
+        for i in range(2) :
+                st.markdown(" ")
+
+        st.markdown("### More informations about this Mushroom")
+        for i in range(2) :
+                st.markdown(" ")
+        col1, col2, col3 = st.columns(3)
+        with col1 :
+            specie_for_expert=specie.lower().replace(" ","_")
+            expert_url=f"https://www.mushroomexpert.com/{specie_for_expert}.html"
+            if url_exists(expert_url) :
+                st.link_button(label='MushroomExpert.com',url=expert_url)
+
+        with col2 :
+            specie_for_world=specie.lower().replace(" ","-")
+            world_url=f"https://www.mushroom.world/show?n={specie_for_world}#google_vignette"
+            if url_exists(world_url):
+                st.link_button(label='MushroomWorld.com',url=world_url)
+
+        with col3 :
+            specie_for_google=specie.lower().replace(" ","+")
+            google_url=f"https://www.google.com/search?tbm=isch&q={specie_for_google}"
+            if url_exists(google_url) :
+                st.link_button("🔎 More Pictures",google_url )
