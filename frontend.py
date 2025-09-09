@@ -5,7 +5,6 @@ import io
 import time
 import requests
 from functions import background,title,url_exists
-import matplotlib.pyplot as plt
 
 API_URL= "https://vit-api-589582796964.europe-west1.run.app/predict/"
 
