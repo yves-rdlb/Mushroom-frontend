@@ -1,5 +1,8 @@
 import streamlit as st
 import requests
+from pathlib import Path
+import pandas as pd
+import pydeck as pdk
 
 def background():
     # IMPORTANT : appelle st.set_page_config avant d'appeler background()
@@ -99,3 +102,105 @@ def url_exists(url: str, timeout: float = 4.0) -> bool:
         return False
     except requests.RequestException:
         return False
+
+
+def anses_safety_tips():
+    st.markdown("### Field and safety tips (ANSES)")
+    with st.expander("While foraging"):
+        st.write("- Harvest **only** mushrooms you can identify with certainty.")
+        st.write("- At the **slightest doubt**, **do not eat** your harvest before having it checked by a **pharmacist** or a **mycology association**.")
+        st.write("- Be cautious with **ID smartphone apps**: the **error risk is high**.")
+
+    with st.expander("Before eating"):
+        st.write("- **Take a photo** of your harvest **before cooking**; it helps in case of poisoning assessment.")
+        st.write("- **Never eat wild mushrooms raw.**")
+        st.write("- **Cook thoroughly:** **20–30 min in a pan** or **15 min in boiling water**.")
+
+    with st.expander("If you feel unwell"):
+        st.write("- For **life-threatening** symptoms, call **15 or 112** (France) immediately (use your local emergency number elsewhere).")
+        st.write("- For any other symptoms, contact a **Poison Control Center** right away.")
+
+    with st.expander("Young children"):
+        st.write("**Never** give wild mushrooms to **young children**.")
+
+    st.link_button("Source: ANSES — “Cueillette des champignons”, 2021 infographic.","https://share.google/9LLk6vtnHd5Sk6237")
+
+    return 1
+
+
+################## Functions for the map #######################
+
+
+def norm_species(s: str) -> str:
+    return str(s).strip().lower().replace(" ", "_")
+
+@st.cache_data
+def load_points(source: str) -> pd.DataFrame:
+    #turns csv into pd dataframe
+    p = Path(source)
+    if not p.exists():
+        return
+    df = pd.read_csv(p)
+    df = df.dropna(subset=["lat","lon"]).copy()
+    df["species"] = df["species"].astype(str).str.strip().str.lower().str.replace(" ", "_")
+
+    return df[["species","lat","lon"]]
+
+def build_heatmap_deck(points_df: pd.DataFrame, species_key: str) -> pdk.Deck:
+    """Construit une carte pydeck avec uniquement la HeatmapLayer."""
+    sdf = points_df[points_df["species"] == species_key]
+    if sdf.empty:
+        # centre par défaut (France approx)
+        center_lat, center_lon = 46.5, 2.0
+    else:
+        center_lat = float(sdf["lat"].mean())
+        center_lon = float(sdf["lon"].mean())
+
+    heat = pdk.Layer(
+        "HeatmapLayer",
+        data=sdf,
+        get_position='[lon, lat]',
+        aggregation="MEAN",
+        radiusPixels=40,    # taille des "taches"
+        intensity=2.5       # intensité de la heatmap
+    )
+
+    view = pdk.ViewState(latitude=center_lat, longitude=center_lon, zoom=1, bearing=0, pitch=0)
+    return pdk.Deck(
+        map_provider="carto",     # pas de token Mapbox nécessaire
+        map_style="light",
+        initial_view_state=view,
+        layers=[heat],
+        tooltip={"text": species_key.replace("_", " ")}
+    )
+
+def render_species_heatmap(species_name: str,
+                           csv_source: str = "species_points.csv"):
+    """
+    Affiche la heatmap pour `species_name` à partir du CSV (local ou URL).
+    Utilisation : render_species_heatmap(specie)  # ou top_species
+    """
+    pts_df = load_points(csv_source)
+    if pts_df.empty :
+        return
+
+    species_key = norm_species(species_name)
+    sdf = pts_df[pts_df["species"] == species_key]
+
+    if sdf.empty:
+        return
+
+    deck = build_heatmap_deck(pts_df, species_key)
+    st.pydeck_chart(deck, use_container_width=True)
+    st.caption("Illustrative distribution. Do not forage based solely on this app.")
+
+@st.cache_data
+def name_and_month(specie) :
+    df=pd.read_csv('species_profile_seed.csv')
+    specie=norm_species(specie)
+    df=df[df['scientific_name']==specie].head(1)
+    if df.empty :
+        return None
+    common_name=df['common_name'].iloc[0]
+    if pd.isna(common_name): common_name = None
+    return common_name

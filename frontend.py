@@ -4,7 +4,9 @@ from PIL import Image
 import io
 import time
 import requests
-from functions import background,title,url_exists
+from functions import background,title,url_exists,anses_safety_tips,load_points,norm_species,build_heatmap_deck,render_species_heatmap,name_and_month
+import pandas as pd
+from pathlib import Path
 
 API_URL= "https://vit-api-589582796964.europe-west1.run.app/predict/"
 
@@ -47,10 +49,6 @@ with left :
             # see the file
             st.image(Image.open(io.BytesIO(img_bytes)), caption="Your file : ", use_container_width=True)
 
-    with st.expander("Pro tip", expanded=False):
-            st.markdown(
-            "You have to put a picture of a Mushroom (Not a picture of yourself 😉)"
-            )
 # ========= Right Column =========
 with right :
     st.markdown("### Discover the specie")
@@ -59,10 +57,10 @@ with right :
             st.markdown(" ")
         with st.expander("Tips for best results", expanded=True):
             st.markdown(
-            "- Use **good lighting** and a **sharp** photo\n"
-            "- Center the **cap & stem**; avoid occlusions\n"
+            "- Put a picture of a Mushroom (Not a picture of yourself 😉)\n"
+            "- Use **good lighting** and a **good quality** photo\n"
+            "- Put the mushroom in the middle. Make sure you can see the **top** and the **stem**.\n"
             "- Prefer a **single mushroom** per photo\n"
-            "- If possible, include the **gills/underside**"
             )
 
         go = st.button("Get Specie",use_container_width=True)
@@ -97,9 +95,10 @@ with right :
             st.error(f"Request failed: {e}")
 
     if specie != " " :
-        c1, c2, c3 = st.columns([1.2, 1, 1])
+        c1, c2, c3 = st.columns([1.5, 1, 1])
         with c1:
-            st.subheader(specie)
+            st.markdown('Scientific Name')
+            st.markdown(f"#### {specie}")
             if edibility == "not edible":
                 st.error("This Mushroom is not edible")
             elif edibility == "edible":
@@ -107,13 +106,21 @@ with right :
         with c2:
             confidence=confidence[:-1]
             confidence=float(confidence)
-            st.metric("Confidence", f"{confidence}%")
+            st.markdown("Confidence",)
+            st.markdown(f"#### {confidence}%")
             if confidence>=80 :
                 st.success("High confidence")
             elif confidence < 50 :
                 st.error("low confidence")
             else :
                 st.warning("medium confidence")
+        with c3 :
+            common_name=name_and_month(specie)
+            if common_name :
+                st.markdown('Common Name')
+                st.markdown(f"#### {common_name}")
+            #st.metric('Fruiting Season',fruiting_season)
+
 
 
         for i in range(2) :
@@ -127,20 +134,35 @@ with right :
         for i in range(2) :
                 st.markdown(" ")
         col1, col2, col3 = st.columns(3)
+
+        specie_with_underscore=specie.lower().replace(" ","_")
+        specie_with_tiret=specie.lower().replace(" ","-")
+        specie_with_plus=specie.lower().replace(" ","+")
         with col1 :
-            specie_for_expert=specie.lower().replace(" ","_")
-            expert_url=f"https://www.mushroomexpert.com/{specie_for_expert}.html"
+            expert_url=f"https://www.mushroomexpert.com/{specie_with_underscore}.html"
+            nature_url=f"https://www.naturespot.org/species/{specie_with_tiret}"
             if url_exists(expert_url) :
                 st.link_button(label='MushroomExpert.com',url=expert_url)
+            if url_exists(nature_url) :
+                st.link_button(label="naturespot.org",url=nature_url)
 
         with col2 :
-            specie_for_world=specie.lower().replace(" ","-")
-            world_url=f"https://www.mushroom.world/show?n={specie_for_world}#google_vignette"
+            world_url=f"https://www.mushroom.world/show?n={specie_with_tiret}#google_vignette"
             if url_exists(world_url):
                 st.link_button(label='MushroomWorld.com',url=world_url)
 
         with col3 :
-            specie_for_google=specie.lower().replace(" ","+")
-            google_url=f"https://www.google.com/search?tbm=isch&q={specie_for_google}"
+            google_url=f"https://www.google.com/search?tbm=isch&q={specie_with_plus}"
             if url_exists(google_url) :
                 st.link_button("🔎 More Pictures",google_url )
+
+for i in range(2) :
+    st.markdown(" ")
+if specie and specie.strip():
+    st.markdown("### Distribution map")
+    with st.expander(label='Mushroom distribution on Earth',expanded=False) :
+        render_species_heatmap(specie, csv_source="species_points.csv")
+
+for i in range(2) :
+    st.markdown(" ")
+anses_safety_tips()
