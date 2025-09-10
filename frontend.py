@@ -25,20 +25,11 @@ left, right = st.columns([1, 1])
 # ========= Left Column =========
 with left :
     st.markdown("### Upload Your Picture")
-    tab_cam, tab_file = st.tabs(["📷 Camera", "📁 File"])
+    tab_file, tab_cam = st.tabs(["📁 File", "📷 Camera"])
 
     img_bytes = None
     filename = None
     mime = "image/jpeg"
-
-    with tab_cam:
-        photo = st.camera_input("Take a picture")
-        if photo is not None:
-            img_bytes = photo.getvalue()
-            filename = "camera.jpg"
-            mime = photo.type or "image/jpeg"
-            # see the picture
-            st.image(Image.open(io.BytesIO(img_bytes)), caption="Your photo : ", use_container_width=True)
 
     with tab_file:
         uploaded = st.file_uploader("Choose an image", type=["jpg", "jpeg", "png"])
@@ -48,6 +39,15 @@ with left :
             mime = uploaded.type or "image/jpeg"
             # see the file
             st.image(Image.open(io.BytesIO(img_bytes)), caption="Your file : ", use_container_width=True)
+
+    with tab_cam:
+        photo = st.camera_input("Take a picture")
+        if photo is not None:
+            img_bytes = photo.getvalue()
+            filename = "camera.jpg"
+            mime = photo.type or "image/jpeg"
+            # see the picture
+            st.image(Image.open(io.BytesIO(img_bytes)), caption="Your photo : ", use_container_width=True)
 
 # ========= Right Column =========
 with right :
