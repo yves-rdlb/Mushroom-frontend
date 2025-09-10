@@ -18,7 +18,7 @@ st.set_page_config(page_title="What Is This Mushroom?", page_icon="🍄", layout
 background()
 title()
 st.markdown("---")
-st.markdown("Upload a picture of a Mushroom and get to know its specie + site description etc...")
+st.markdown("Upload a picture of a Mushroom and get to know its species ! Our website covers 169 Mushroom species, but there are far more in nature !")
 # ========= UI LAYOUT =========
 left, right = st.columns([1, 1])
 
@@ -51,7 +51,7 @@ with left :
 
 # ========= Right Column =========
 with right :
-    st.markdown("### Discover the specie")
+    st.markdown("### Discover the species")
     if img_bytes:
         for i in range(2) :
             st.markdown(" ")
@@ -61,9 +61,10 @@ with right :
             "- Use **good lighting** and a **good quality** photo\n"
             "- Put the mushroom in the middle. Make sure you can see the **top** and the **stem**.\n"
             "- Prefer a **single mushroom** per photo\n"
+            "- Remember our model doesn't know **every** species, yours may be unknown to it "
             )
 
-        go = st.button("Get Specie",use_container_width=True)
+        go = st.button("Get Species",use_container_width=True)
     else:
         for i in range(6) :
             st.markdown(" ")
