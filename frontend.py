@@ -60,7 +60,6 @@ with right :
             "- Put a picture of a Mushroom (Not a picture of yourself 😉)\n"
             "- Use **good lighting** and a **good quality** photo\n"
             "- Put the mushroom in the middle. Make sure you can see the **top** and the **stem**.\n"
-            "- Prefer a **single mushroom** per photo\n"
             "- Remember our model doesn't know **every** species, yours may be unknown to it "
             )
 
